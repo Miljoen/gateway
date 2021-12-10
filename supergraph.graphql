@@ -1,0 +1,101 @@
+schema
+  @core(feature: "https://specs.apollo.dev/core/v0.2"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1", for: EXECUTION)
+{
+  query: Query
+  mutation: Mutation
+}
+
+directive @core(as: String, feature: String!, for: core__Purpose) repeatable on SCHEMA
+
+directive @join__field(graph: join__Graph, provides: join__FieldSet, requires: join__FieldSet) on FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__owner(graph: join__Graph!) on INTERFACE | OBJECT
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on INTERFACE | OBJECT
+
+type Mutation {
+  sendRestaurantUpdate(input: SendRestaurantInput!): String! @join__field(graph: SOCKET_SERVICE)
+  sendStockReservedUpdate(input: SendStockReservedUpdateInput!): String! @join__field(graph: SOCKET_SERVICE)
+  sendStockUnreservedUpdate(input: SendStockUnreservedUpdateInput!): String! @join__field(graph: SOCKET_SERVICE)
+  sendStockUpdate(input: SendStockUpdateInput!): String! @join__field(graph: SOCKET_SERVICE)
+  sendTimeslotUpdate(input: SendTimeslotUpdateInput!): String! @join__field(graph: SOCKET_SERVICE)
+}
+
+type Query {
+  me: User @join__field(graph: SOCKET_SERVICE)
+  stockReservations: [StockReservation!]! @join__field(graph: SOCKET_SERVICE)
+}
+
+type RestaurantUpdate {
+  restaurantId: ID!
+}
+
+input SendRestaurantInput {
+  restaurantId: ID!
+}
+
+input SendStockReservedUpdateInput {
+  menuItemStockId: ID!
+}
+
+input SendStockUnreservedUpdateInput {
+  menuItemStockId: ID!
+}
+
+input SendStockUpdateInput {
+  menuItemStockId: ID!
+  stockClaimed: Int!
+  stockTotal: Int!
+}
+
+input SendTimeslotUpdateInput {
+  capacityClaimed: Int!
+  capacityTotal: Int!
+  timeslotId: ID!
+}
+
+type StockReservation {
+  menuItemStockId: ID!
+  stockReserved: Int!
+}
+
+type StockUpdate {
+  menuItemStockId: ID!
+  stockClaimed: Int!
+  stockTotal: Int!
+}
+
+type TimeslotUpdate {
+  capacityClaimed: Int!
+  capacityTotal: Int!
+  timeslotId: ID!
+}
+
+type User
+  @join__owner(graph: SOCKET_SERVICE)
+  @join__type(graph: SOCKET_SERVICE, key: "id")
+{
+  id: ID! @join__field(graph: SOCKET_SERVICE)
+  username: String @join__field(graph: SOCKET_SERVICE)
+}
+
+enum core__Purpose {
+  """
+  `EXECUTION` features provide metadata necessary to for operation execution.
+  """
+  EXECUTION
+
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  SOCKET_SERVICE @join__graph(name: "socket-service" url: "http://localhost:4001/graphql")
+}
