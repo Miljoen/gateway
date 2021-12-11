@@ -25,7 +25,6 @@ type Mutation {
 }
 
 type Query {
-  me: User @join__field(graph: SOCKET_SERVICE)
   stockReservations: [StockReservation!]! @join__field(graph: SOCKET_SERVICE)
 }
 
@@ -72,14 +71,6 @@ type TimeslotUpdate {
   capacityClaimed: Int!
   capacityTotal: Int!
   timeslotId: ID!
-}
-
-type User
-  @join__owner(graph: SOCKET_SERVICE)
-  @join__type(graph: SOCKET_SERVICE, key: "id")
-{
-  id: ID! @join__field(graph: SOCKET_SERVICE)
-  username: String @join__field(graph: SOCKET_SERVICE)
 }
 
 enum core__Purpose {
